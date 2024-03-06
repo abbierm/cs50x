@@ -85,7 +85,7 @@ int main(int argc, string argv[])
                 return 3;
             }
         }
-
+        
         record_preferences(ranks);
         printf("\n");
     }
@@ -200,8 +200,6 @@ void sort_pairs(void)
 // the same as the loser.
 bool check_cycles(int winner, int loser)
 {
-    // printf("Checking cycles for %i-%i\n", winner, loser);
-    // printf("Checking cycles for %i %i\n", start, loser);
     if (winner == loser)
     {
         return true;
