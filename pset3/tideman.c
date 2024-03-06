@@ -226,11 +226,9 @@ void lock_pairs(void)
     // TODO
     for (int i = 0; i < pair_count; i++)
     {
-        // printf("Checking pair: %i - %i\n", pairs[i].winner, pairs[i].loser);
         if (!(check_cycles(pairs[i].winner, pairs[i].loser)))
         {
             locked[pairs[i].winner][pairs[i].loser] = true;
-            // printf("locking Pairs %i - %i\n", pairs[i].winner, pairs[i].loser);
         }
     }
     return;
