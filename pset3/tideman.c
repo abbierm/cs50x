@@ -1,228 +1,258 @@
 #include <cs50.h>
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
-// Max voters and candidates
-#define MAX_VOTERS 100
-#define MAX_CANDIDATES 9
+// Max number of candidates
+#define MAX 9
 
-// preferences[i][j] is jth preference for voter i
-int preferences[MAX_VOTERS][MAX_CANDIDATES];
+// preferences[i][j] is number of voters who prefer i over j
+int preferences[MAX][MAX];
 
-// Candidates have name, vote count, eliminated status
+// locked[i][j] means i is locked in over j
+bool locked[MAX][MAX];
+
+// Each pair has a winner, loser
 typedef struct
 {
-    string name;
-    int votes;
-    bool eliminated;
-} candidate;
+    int winner;
+    int loser;
+} pair;
 
 // Array of candidates
-candidate candidates[MAX_CANDIDATES];
+string candidates[MAX];
+pair pairs[MAX * (MAX - 1) / 2];
 
-// Numbers of voters and candidates
-int voter_count;
+int pair_count;
 int candidate_count;
 
 // Function prototypes
-bool vote(int voter, int rank, string name);
-void tabulate(void);
-bool print_winner(void);
-int find_min(void);
-bool is_tie(int min);
-void eliminate(int min);
+bool vote(int rank, string name, int ranks[]);
+void record_preferences(int ranks[]);
+void add_pairs(void);
+int find_strength(pair p);
+void sort_pairs(void);
+bool check_cycles(int winner, int loser);
+void lock_pairs(void);
+void print_winner(void);
 
 int main(int argc, string argv[])
 {
     // Check for invalid usage
     if (argc < 2)
     {
-        printf("Usage: runoff [candidate ...]\n");
+        printf("Usage: tideman [candidate ...]\n");
         return 1;
     }
 
     // Populate array of candidates
     candidate_count = argc - 1;
-    if (candidate_count > MAX_CANDIDATES)
+    if (candidate_count > MAX)
     {
-        printf("Maximum number of candidates is %i\n", MAX_CANDIDATES);
+        printf("Maximum number of candidates is %i\n", MAX);
         return 2;
     }
     for (int i = 0; i < candidate_count; i++)
     {
-        candidates[i].name = argv[i + 1];
-        candidates[i].votes = 0;
-        candidates[i].eliminated = false;
+        candidates[i] = argv[i + 1];
     }
 
-    voter_count = get_int("Number of voters: ");
-    if (voter_count > MAX_VOTERS)
+    // Clear graph of locked in pairs
+    for (int i = 0; i < candidate_count; i++)
     {
-        printf("Maximum number of voters is %i\n", MAX_VOTERS);
-        return 3;
+        for (int j = 0; j < candidate_count; j++)
+        {
+            locked[i][j] = false;
+        }
     }
 
-    // Keep querying for votes
+    pair_count = 0;
+    int voter_count = get_int("Number of voters: ");
+
+    // Query for votes
     for (int i = 0; i < voter_count; i++)
     {
+        // ranks[i] is voter's ith preference
+        int ranks[candidate_count];
 
         // Query for each rank
         for (int j = 0; j < candidate_count; j++)
         {
             string name = get_string("Rank %i: ", j + 1);
 
-            // Record vote, unless it's invalid
-            if (!vote(i, j, name))
+            if (!vote(j, name, ranks))
             {
                 printf("Invalid vote.\n");
-                return 4;
+                return 3;
             }
         }
 
+        record_preferences(ranks);
         printf("\n");
     }
 
-    // Keep holding runoffs until winner exists
-    while (true)
-    {
-        // Calculate votes given remaining candidates
-        tabulate();
-
-        // Check if election has been won
-        bool won = print_winner();
-        if (won)
-        {
-            break;
-        }
-
-        // Eliminate last-place candidates
-        int min = find_min();
-        bool tie = is_tie(min);
-
-        // If tie, everyone wins
-        if (tie)
-        {
-            for (int i = 0; i < candidate_count; i++)
-            {
-                if (!candidates[i].eliminated)
-                {
-                    printf("%s\n", candidates[i].name);
-                }
-            }
-            break;
-        }
-
-        // Eliminate anyone with minimum number of votes
-        eliminate(min);
-
-        // Reset vote counts back to zero
-        for (int i = 0; i < candidate_count; i++)
-        {
-            candidates[i].votes = 0;
-        }
-    }
+    add_pairs();
+    sort_pairs();
+    lock_pairs();
+    print_winner();
     return 0;
 }
 
-// Record preference if vote is valid
-bool vote(int voter, int rank, string name)
+// Update ranks given a new vote
+bool vote(int rank, string name, int ranks[])
 {
     // TODO
     for (int i = 0; i < candidate_count; i++)
     {
-        if (strcmp(name, candidates[i].name) == 0)
+        if (strcmp(name, candidates[i]) == 0)
         {
-            preferences[voter][rank] = i;
+            ranks[rank] = i;
             return true;
         }
     }
     return false;
 }
 
-// Tabulate votes for non-eliminated candidates
-void tabulate()
+// Update preferences given one voter's ranks
+void record_preferences(int ranks[])
 {
-    for (int i = 0; i < voter_count; i++)
+    // TODO
+    for (int i = 0; i < candidate_count; i++)
     {
-        for (int j = 0; j < candidate_count; j++)
+        // current rank is i
+        // current person is ranks[i]
+        for (int j = i + 1; j < candidate_count; j++)
         {
-            int current_candidate = preferences[i][j];
-            if (candidates[current_candidate].eliminated == false)
+            preferences[ranks[i]][ranks[j]] += 1;
+        }
+    }
+}
+
+// Record pairs of candidates where one is preferred over the other
+void add_pairs(void)
+{
+    // TODO
+    int p = 0;
+    for (int i = 0; i < candidate_count; i++)
+    {
+        for (int j = i + 1; j < candidate_count; j++)
+        {
+            if (preferences[i][j] != preferences[j][i])
             {
-                candidates[current_candidate].votes += 1;
-                break;
+                pair new_pair;
+                p += 1;
+                if (preferences[i][j] > preferences[j][i])
+                {
+                    new_pair.winner = i;
+                    new_pair.loser = j;
+                }
+                else
+                {
+                    new_pair.winner = j;
+                    new_pair.loser = i;
+                }
+                pairs[p - 1] = new_pair;
             }
         }
     }
+    pair_count = p;
     return;
 }
 
-// Print the winner of the election, if there is one
-bool print_winner(void)
+// Finds the difference between winning votes and losing votes for preferences
+int find_strength(pair p)
 {
-    // TODO
-    int winning_count = floor(voter_count / 2) + 1;
-    for (int i = 0; i < candidate_count; i++)
-    {
-        if (candidates[i].votes >= winning_count)
-        {
-            printf("%s\n", candidates[i].name);
-            return true;
-        }
-    }
-    return false;
+    int winner_votes = preferences[p.winner][p.loser];
+    int loser_votes = preferences[p.loser][p.winner];
+    int strength = winner_votes - loser_votes;
+    return strength;
 }
 
-// Return the minimum number of votes any remaining candidate has
-int find_min(void)
+// Sort pairs in decreasing order by strength of victory
+void sort_pairs(void)
 {
     // TODO
-    int min = 100;
-    for (int i = 0; i < candidate_count; i++)
+    for (int i = 0; i < pair_count; i++)
     {
-        if (candidates[i].votes < min && candidates[i].eliminated == false)
-        {
-            min = candidates[i].votes;
-        }
-    }
-    return min;
-}
+        int current_strength = find_strength(pairs[i]);
 
-// Return true if the election is tied between all candidates, false otherwise
-bool is_tie(int min)
-{
-    // TODO
-    int not_eliminated = 0;
-    int equals_min = 0;
-    for (int i = 0; i < candidate_count; i++)
-    {
-        if (candidates[i].eliminated == false)
+        // Index for the current highest strength pair
+        int current_top_index = i;
+
+        // Comparing Loop
+        for (int j = i + 1; j < pair_count; j++)
         {
-            not_eliminated += 1;
-            if (candidates[i].votes == min)
+            int compare_strength = find_strength(pairs[j]);
+            if (compare_strength > current_strength)
             {
-                equals_min += 1;
+                current_top_index = j;
+                current_strength = compare_strength;
             }
         }
+        pair temp = pairs[i];
+        pairs[i] = pairs[current_top_index];
+        pairs[current_top_index] = temp;
     }
-    if (not_eliminated == equals_min)
+
+    return;
+}
+
+// Literally checking them all to see if at any point the start will be the
+// the same as the loser.
+bool check_cycles(int winner, int loser)
+{
+    if (winner == loser)
     {
         return true;
     }
+    for (int i = 0; i < candidate_count; i++)
+    {
+        if (locked[i][winner] == true)
+        {
+            if (check_cycles(i, loser))
+            {
+                return true;
+            }
+        }
+    }
     return false;
 }
 
-// Eliminate the candidate (or candidates) in last place
-void eliminate(int min)
+// Lock pairs into the candidate graph in order, without creating cycles
+void lock_pairs(void)
 {
     // TODO
-    for (int i = 0; i < candidate_count; i++)
+    for (int i = 0; i < pair_count; i++)
     {
-        if (candidates[i].votes == min)
+        // printf("Checking pair: %i - %i\n", pairs[i].winner, pairs[i].loser);
+        if (!(check_cycles(pairs[i].winner, pairs[i].loser)))
         {
-            candidates[i].eliminated = true;
+            locked[pairs[i].winner][pairs[i].loser] = true;
+            // printf("locking Pairs %i - %i\n", pairs[i].winner, pairs[i].loser);
         }
     }
     return;
 }
+
+// Print the winner of the election
+void print_winner(void)
+{
+    // TODO
+    for (int i = 0; i < candidate_count; i++)
+    {
+        int flag = 0;
+        for (int j = 0; j < candidate_count; j++)
+        {
+            if (locked[j][i] == true)
+            {
+                flag = 1;
+            }
+        }
+        if (flag == 0)
+        {
+            printf("%s\n", candidates[i]);
+            break;
+        }
+    }
+    return;
+}
+
