@@ -1,29 +1,24 @@
 #include "helpers.h"
 #include <math.h>
-#include <stdlib.h>
 
 // Convert image to grayscale
 void grayscale(int height, int width, RGBTRIPLE image[height][width])
 {
-    //iterates through height
-    for (int i = 0; i < height; i ++)
+    // Iterate through all of the rows [x][0]
+    for (int i = 0; i < height; i++)
     {
-        // Iterates through width
+        // Iterate through all of the columns [0][x]
         for (int j = 0; j < width; j++)
         {
-            // Add all the values from the struct
-            int red = image[i][j].rgbtRed;
-            int blue = image[i][j].rgbtBlue;
-            int green = image[i][j].rgbtGreen;
+            // Get average of the pixel's RGB values
+            float average =
+                (image[i][j].rgbtBlue + image[i][j].rgbtGreen + image[i][j].rgbtRed) / 3.0;
+            int avg = round(average);
 
-            int sum = red + blue + green;
-
-            float average_unrounded = sum / 3.0;
-            int average = round(average_unrounded);
-
-            image[i][j].rgbtRed = average;
-            image[i][j].rgbtBlue = average;
-            image[i][j].rgbtGreen = average;
+            // Set all the RGB values to that value
+            image[i][j].rgbtBlue = avg;
+            image[i][j].rgbtGreen = avg;
+            image[i][j].rgbtRed = avg;
         }
     }
     return;
@@ -32,59 +27,70 @@ void grayscale(int height, int width, RGBTRIPLE image[height][width])
 // Convert image to sepia
 void sepia(int height, int width, RGBTRIPLE image[height][width])
 {
-    // Iterate through the width
-    for (int h = 0; h < height; h++)
+    // Iterate through all of the pixels
+    for (int i = 0; i < height; i++)
     {
-        // Iterate through the height
-        for (int w = 0; w < width; w++)
+        for (int j = 0; j < width; j++)
         {
-            // Get the original int values for the rgb
-            int original_red = image[h][w].rgbtRed;
-            int original_blue = image[h][w].rgbtBlue;
-            int original_green = image[h][w].rgbtGreen;
+            // TODO: Convert Values to integers
+            int ogRed = image[i][j].rgbtRed;
+            int ogGreen = image[i][j].rgbtGreen;
+            int ogBlue = image[i][j].rgbtBlue;
 
-            // Use the sepia formulas to get the new colors for filter
-            int sepia_red = round(.393 * original_red + .769 * original_green + .189 * original_blue);
-
-            if (sepia_red > 255)
+            // Find the red value
+            float red_float = .393 * ogRed + .769 * ogGreen + .189 * ogBlue;
+            int red = round(red_float);
+            if (red > 255)
             {
-                sepia_red = 255;
+                red = 255;
             }
-            image[h][w].rgbtRed = sepia_red;
 
-            // Green
-            int sepia_green = round(.349 * original_red + .686 * original_green + .168 * original_blue);
-
-            if (sepia_green > 255)
+            // Find the Green Sepia Value
+            float green_float = .349 * ogRed + .686 * ogGreen + .168 * ogBlue;
+            int green = round(green_float);
+            if (green > 255)
             {
-                sepia_green = 255;
+                green = 255;
             }
-            image[h][w].rgbtGreen = sepia_green;
 
-            // Blue
-            int sepia_blue = round(.272 * original_red + .534 * original_green + .131 * original_blue);
-
-            if (sepia_blue > 255)
+            // Find the Blue Sepia Value
+            float blue_float = .272 * ogRed + .534 * ogGreen + .131 * ogBlue;
+            int blue = round(blue_float);
+            if (blue > 255)
             {
-                sepia_blue = 255;
+                blue = 255;
             }
-            image[h][w].rgbtBlue = sepia_blue;
+
+            // Set all of the new values.
+            image[i][j].rgbtRed = red;
+            image[i][j].rgbtGreen = green;
+            image[i][j].rgbtBlue = blue;
         }
     }
+    return;
 }
 
 // Reflect image horizontally
 void reflect(int height, int width, RGBTRIPLE image[height][width])
 {
-    // Iterate through each row (height)
+    // Iterate over all of the pixels
     for (int h = 0; h < height; h++)
     {
-        for (int w = 0; w < (width / 2); w++)
+        for (int w = 0, half_width = width / 2; w < half_width; w++)
         {
-            // Swap h[i] with h[-(i + 1)]
-            RGBTRIPLE tmp = image[h][w];
-            image[h][w] = image[h][width - 1 - w];
-            image[h][width - 1 - w] = tmp;
+            // Capture the current pixel in a temp value
+            int tempRed = image[h][w].rgbtRed, tempGreen = image[h][w].rgbtGreen,
+                tempBlue = image[h][w].rgbtBlue;
+
+            // Get mirrored value for current pixels
+            image[h][w].rgbtRed = image[h][width - w - 1].rgbtRed;
+            image[h][w].rgbtBlue = image[h][width - w - 1].rgbtBlue;
+            image[h][w].rgbtGreen = image[h][width - w - 1].rgbtGreen;
+
+            // Make temp values the mirrored pixels values
+            image[h][width - w - 1].rgbtRed = tempRed;
+            image[h][width - w - 1].rgbtGreen = tempGreen;
+            image[h][width - w - 1].rgbtBlue = tempBlue;
         }
     }
     return;
@@ -93,143 +99,46 @@ void reflect(int height, int width, RGBTRIPLE image[height][width])
 // Blur image
 void blur(int height, int width, RGBTRIPLE image[height][width])
 {
-    // Make a copy of the image
+    // Make copy of the original image
     RGBTRIPLE copy[height][width];
-
-    // Iterate through the original image to fill in the image's pixel's for the copy
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
         {
-            copy[i][j] = image[i][j];
+            copy[i][j].rgbtRed = image[i][j].rgbtRed;
+            copy[i][j].rgbtBlue = image[i][j].rgbtBlue;
+            copy[i][j].rgbtGreen = image[i][j].rgbtGreen;
         }
     }
 
-    // Iterate through the original image
+    // Iterate through the image
     for (int h = 0; h < height; h++)
     {
         for (int w = 0; w < width; w++)
         {
-            // Set Average Variables
-            float average_red_unrounded;
-            float average_blue_unrounded;
-            float average_green_unrounded;
 
-            // Total sums of different values
-            int total_red = 0;
-            int total_blue = 0;
-            int total_green = 0;
+            int red_sum = 0, green_sum = 0, blue_sum = 0;
+            float counter = 0.0;
 
-            // Divide By Variable
-            float divide_by = 0.0;
-
-            // Access each pixel and add to respective sums
-
-            // Conditional for top left
-            if (h != 0 && w != 0)
+            for (int a = -1; a < 2; a++)
             {
-                // Top left [h-1][w-1]
-                total_red += copy[h - 1][w - 1].rgbtRed;
-                total_blue += copy[h - 1][w - 1].rgbtBlue;
-                total_green += copy[h - 1][w - 1].rgbtGreen;
-                divide_by++;
+                for (int b = -1; b < 2; b++)
+                {
+                    if ((a + h) >= 0 && (a + h) <= height - 1 && (b + w) >= 0 &&
+                        (b + w <= width - 1))
+                    {
+                        red_sum += copy[h + a][w + b].rgbtRed;
+                        green_sum += copy[h + a][w + b].rgbtGreen;
+                        blue_sum += copy[h + a][w + b].rgbtBlue;
+                        counter += 1;
+                    }
+                }
             }
 
-            // Conditional for top
-            if (h != 0)
-            {
-                // Top [h-1][w]
-                total_red += copy[h - 1][w].rgbtRed;
-                total_blue += copy[h - 1][w].rgbtBlue;
-                total_green += copy[h - 1][w].rgbtGreen;
-                divide_by++;
-            }
-
-            // Conditional for top right
-            if (h != 0 && (w + 1) < width)
-            {
-                // Top Right [h-1][w+1]
-                total_red += copy[h - 1][w + 1].rgbtRed;
-                total_blue += copy[h - 1][w + 1].rgbtBlue;
-                total_green += copy[h - 1][w + 1].rgbtGreen;
-                divide_by++;
-            }
-
-            // Conditional for left
-            if (w != 0)
-            {
-                // Left [h][w-1]
-                total_red += copy[h][w - 1].rgbtRed;
-                total_blue += copy[h][w - 1].rgbtBlue;
-                total_green += copy[h][w - 1].rgbtGreen;
-                divide_by++;
-            }
-
-            // center
-            total_red += copy[h][w].rgbtRed;
-            total_blue += copy[h][w].rgbtBlue;
-            total_green += copy[h][w].rgbtGreen;
-            divide_by++;
-
-            // Conditional for right
-            if ((w + 1) < width)
-            {
-                // Right [h][w+1]
-                total_red += copy[h][w + 1].rgbtRed;
-                total_blue += copy[h][w + 1].rgbtBlue;
-                total_green += copy[h][w + 1].rgbtGreen;
-                divide_by++;
-            }
-
-            // Conditional for bottom left
-            if (w != 0 && (h + 1) < height)
-            {
-                // Bottom Left [h+1][w-1]
-                total_red += copy[h + 1][w - 1].rgbtRed;
-                total_blue += copy[h + 1][w - 1].rgbtBlue;
-                total_green += copy[h + 1][w - 1].rgbtGreen;
-                divide_by++;
-            }
-
-            // Conditional for bottom [h + 1][w]
-            if (h + 1 < height)
-            {
-                // Bottom [h+1][w]
-                total_red += copy[h + 1][w].rgbtRed;
-                total_blue += copy[h + 1][w].rgbtBlue;
-                total_green += copy[h + 1][w].rgbtGreen;
-                divide_by++;
-            }
-
-            // Conditional for bottom right
-            if (h + 1 < height && w + 1 < width)
-            {
-                // Bottom Right [h+1][w+1]
-                total_red += copy[h + 1][w + 1].rgbtRed;
-                total_blue += copy[h + 1][w + 1].rgbtBlue;
-                total_green += copy[h + 1][w + 1].rgbtGreen;
-                divide_by++;
-            }
-
-            // Get Averages for each color
-            // Red
-            average_red_unrounded = total_red / divide_by;
-            int average_red = round(average_red_unrounded);
-
-            // Blue
-            average_blue_unrounded = total_blue / divide_by;
-            int average_blue = round(average_blue_unrounded);
-
-            // Green
-            average_green_unrounded = total_green / divide_by;
-            int average_green = round(average_green_unrounded);
-
-            // Set new values for center pixel
-            image[h][w].rgbtRed = average_red;
-            image[h][w].rgbtBlue = average_blue;
-            image[h][w].rgbtGreen = average_green;
+            image[h][w].rgbtRed = round(red_sum / counter);
+            image[h][w].rgbtGreen = round(green_sum / counter);
+            image[h][w].rgbtBlue = round(blue_sum / counter);
         }
     }
-
     return;
 }
