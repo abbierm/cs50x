@@ -1,89 +1,77 @@
+// Recovers lost .jpg on .raw files into current directory
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 
 int main(int argc, char *argv[])
 {
-    // Type to store a BYTE
-    typedef uint8_t BYTE;
-
-    // Input validation to make sure correct number of command line arguments
     if (argc != 2)
     {
-        printf("Invalid command line argument. Expected only 1 argument and received %i\n", argc - 1);
+        printf("Usage: ./recover FILE\n");
         return 1;
     }
 
-    // Open Memory Card
-    // Needs to be in CWD
-    FILE *file = fopen(argv[1], "r");
+    char *infile = argv[1];
 
-    // Input Validation to make sure argv[1] is an openable image in the CWD
-    if (file == NULL)
+    FILE *inptr = fopen(infile, "r");
+    if (inptr == NULL)
     {
-        printf("Could not open file!\n");
+        printf("Cound not open %s. \n", infile);
         return 1;
     }
 
-    // Variables to help control program
-    int block = 512;
-    int counter = 0;
+    uint8_t buffer[512];
+    // Counter for specific files
+    int current = 0;
+    // Flag helps control closing the open files once
+    // the program finds the header of a new .jpg
+    int flag = 0;
+    FILE *outptr;
+
+    // Create first file
     char *filename = malloc(8);
-
-    // Flag that helps keep track of the programs loop
-    int writing = 0;
-
-    // Points to the location of the file we want to store the images
-    FILE *output = NULL;
-
-    // Buffer variable to store the blocks of data while checking to see if it meets the criteria
-    BYTE buffer[512];
-
-    while (fread(&buffer, sizeof(BYTE), block, file) == 512)
+    if (filename == NULL)
     {
-        // Conditional to check if the program has an open file it is writing to
-        if (writing == 1)
+        printf("Not enough memory to store filename\n");
+        fclose(inptr);
+        return 1;
+    }
+
+    while (fread(&buffer, sizeof(buffer), 1, inptr) == 1)
+    {
+        // Looks for new .jpg header
+        if (buffer[0] == 0xff && buffer[1] == 0xd8 && buffer[2] == 0xff &&
+            (buffer[3] & 0xf0) == 0xe0)
         {
-            // Checks firt 4 bytes for indication of a new image
-            if (buffer[0] == 0xff && buffer[1] == 0xd8 && buffer[2] == 0xff && (buffer[3]  & 0xf0) == 0xe0)
+            if (flag == 1)
             {
-                // Closes the previous file
-                fclose(output);
-
-                // Create a new filename and write to it
-                sprintf(filename, "%03i.jpg", counter);
-                output = fopen(filename, "w");
-                fwrite(&buffer, sizeof(BYTE), block, output);
-
-                //update the counter
-                counter++;
+                fclose(outptr);
             }
-
-            // Else keep writing to the current file
-            else
+            sprintf(filename, "%03d.jpg", current);
+            outptr = fopen(filename, "a");
+            if (outptr == NULL)
             {
-                fwrite(&buffer, sizeof(BYTE), block, output);
+                printf("Could not write to %s\n", filename);
+                fclose(inptr);
+                return 1;
             }
+            // Write to file
+            fwrite(&buffer, sizeof(buffer), 1, outptr);
+            current += 1;
+            flag = 1;
         }
-        // Haven't found any jpg yet
-        else if (writing == 0)
-        {
-            // Checks first 4 BYTES for an image
-            if (buffer[0] == 0xff && buffer[1] == 0xd8 && buffer[2] == 0xff && (buffer[3]  & 0xf0) == 0xe0)
-            {
-                // Create a new filename and write to it
-                sprintf(filename, "%03i.jpg", counter);
-                output = fopen(filename, "w");
-                fwrite(&buffer, sizeof(BYTE), block, output);
-                writing = 1;
-                counter++;
-            }
 
+        // Program is still writing to the same file
+        else if (flag == 1)
+        {
+            fwrite(&buffer, sizeof(buffer), 1, outptr);
         }
     }
-    // Close the file we are reading
-    fclose(file);
-    fclose(output);
-    free(filename);
 
+    if (flag == 1)
+    {
+        fclose(outptr);
+    }
+    fclose(inptr);
+    free(filename);
 }
