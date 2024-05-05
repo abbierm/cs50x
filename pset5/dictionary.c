@@ -3,10 +3,9 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
-#include <math.h>
 
 #include "dictionary.h"
 
@@ -15,104 +14,111 @@ typedef struct node
 {
     char word[LENGTH + 1];
     struct node *next;
-}
-node;
+} node;
 
 // Choose number of buckets in hash table
-const unsigned int N = 356;
+const unsigned int N = 20384;
 
 // Hash table
 node *table[N];
 
-// Number of words
-unsigned int words;
+// Keeps track of the number of words
+int words = 0;
 
 // Returns true if word is in dictionary, else false
 bool check(const char *word)
 {
-    // Use hash function to get index
-    unsigned int index = hash(word);
-
-    // Iterate through the linked list
-    for (node *tmp = table[index]; tmp != NULL; tmp = tmp ->next)
+    unsigned int word_hash = hash(word);
+    if (table[word_hash] == NULL)
     {
-        // Use strcasecmp to check every word while next != NULL
-        if (strcasecmp(word, tmp->word) == 0)
+        return false;
+    }
+    for (node *ptr = table[word_hash]; ptr != NULL; ptr = ptr->next)
+    {
+        if (strcasecmp(word, ptr->word) == 0)
         {
-            // If both words are the same return true
             return true;
             break;
         }
     }
-
-    // Else return false
     return false;
 }
 
 // Hashes word to a number
 unsigned int hash(const char *word)
 {
-    // Improved Hash Function
-    unsigned int hash_index = 0;
-    int i = 0;
-    while (word[i] != '\0' && i < 3)
+    unsigned int v = toupper(word[0]) - '@';
+    for (int i = 1; i < 3; i++)
     {
-        if (word[i] != 39)
+        if (word[i] == '\'')
         {
-            hash_index += (toupper(word[i]) - '@');
+            v = v * 28;
         }
-        i++;
+        else if (word[i] == '\0')
+        {
+            v = v * 27;
+        }
+        else
+        {
+            unsigned int l = toupper(word[i]) - '@';
+            v = v * l;
+        }
+    }
+    if (v > N)
+    {
+        printf("Word: %s hash is %i\n", word, v);
     }
 
-    return hash_index;
+    return v;
 }
 
 // Loads dictionary into memory, returning true if successful, else false
 bool load(const char *dictionary)
 {
-    // Initialize hash table
+    // initialize the hash table
     for (int i = 0; i < N; i++)
     {
         table[i] = NULL;
     }
 
-    // Open Dictionary
+    // Open the dictionary file
     FILE *dict = fopen(dictionary, "r");
     if (dict == NULL)
     {
-        printf("Could not open file.\n");
+        fclose(dict);
         return false;
     }
 
-    // Buffer that stores the word
-    char w[LENGTH + 1];
+    // The string buffer that accepts strings
+    char buffer[LENGTH + 1];
 
-    // Read strings from file 1 word at a time
-    while (fscanf(dict, "%s", w) != EOF)
+    while (fscanf(dict, "%s", buffer) != EOF)
     {
-        // Allocates memory for next word in dict
-        node *new_entry = malloc(sizeof(node));
-
-        // Check if the return value is NULL
-        if (new_entry == NULL)
+        node *new = malloc(sizeof(node));
+        if (new == NULL)
         {
+            fclose(dict);
             return false;
         }
 
-        // Copy word into node using strcpy
-        strcpy(new_entry->word, w);
-        new_entry->next = NULL;
+        strcpy(new->word, buffer);
 
-        // Hash word to create a hash value
-        unsigned int index = hash(w);
+        new->next = NULL;
 
-        // Points Hash bucket to the new item on the list
-        new_entry->next = table[index];
-        table[index] = new_entry;
+        unsigned int new_hash = hash(buffer);
 
-        // counter for size
+        // Adding the new word to the TOP of the list!!!!
+        if (table[new_hash] == NULL)
+        {
+            table[new_hash] = new;
+        }
+        else
+        {
+
+            new->next = table[new_hash];
+            table[new_hash] = new;
+        }
         words++;
-
     }
 
     fclose(dict);
@@ -122,33 +128,29 @@ bool load(const char *dictionary)
 // Returns number of words in dictionary if loaded, else 0 if not yet loaded
 unsigned int size(void)
 {
-    // Uses counter in the load function
     return words;
-
 }
 
 // Unloads dictionary from memory, returning true if successful, else false
 bool unload(void)
 {
-    // Iterate through the hash table
-    for (unsigned int i = 0; i < N; i++)
+
+    for (int i = 1; i <= N; i++)
     {
-        node *marker = table[i];
-
-        // Iterate through the linked lists
-        while (marker != NULL)
+        node *ptr = table[i];
+        if (ptr != NULL)
         {
-            node *tmp = marker;
-            marker = marker->next;
-            free(tmp);
+            while (ptr != NULL)
+            {
+                node *tmp = ptr->next;
+                free(ptr);
+                ptr = tmp;
+            }
         }
-
-        if (marker == NULL && i == N - 1)
+        else
         {
-            return true;
+            free(ptr);
         }
     }
-
-    return false;
+    return true;
 }
-
