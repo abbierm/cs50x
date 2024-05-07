@@ -6,38 +6,32 @@ def main():
 
     # Check for command-line usage
     if len(sys.argv) != 3:
-        sys.exit("Usage: python dna.py FILENAME.csv FILENAME.txt")
+        print("Usage Error: Must include csv file and DNA sequence file")
+        sys.exit()
 
     # Read database file into a variable
-    individual_strs = []
-    with open(sys.argv[1], "r") as file:
-        strs = csv.DictReader(file)
-        for row in strs:
-            individual_strs.append(row)
+    with open(sys.argv[1]) as csv_file:
+        reader = csv.DictReader(csv_file)
+        sequences = reader.fieldnames
 
-    # Read DNA sequence file into a variable
-    with open(sys.argv[2], "r") as unknown_dna:
-        dna_text = unknown_dna.read()
+        # Find longest match of each STR in DNA sequence
+        sequence_values = {}
+        with open(sys.argv[2]) as dna_file:
+            x = dna_file.read()
+            for sequence in sequences:
+                sequence_values[sequence] = longest_match(x, sequence)
 
     # Check database for matching profiles
-    not_it = []
-    people = []
-    for individual in individual_strs:
-        for key, value in individual.items():
-            if key != "name":
-                longest_str_match = longest_match(dna_text, key)
-                if longest_str_match != int(value):
-                    not_it.append(individual["name"])
-                    break
-            else:
-                people.append(individual["name"])
-
-    for peeps in people:
-        if peeps not in not_it:
-            print(peeps)
-            sys.exit()
-
-    print("No Match")
+        for row in reader:
+            fixed_row = {key: int(value) for key, value in row.items() if key != 'name'}
+            goal_count = len(sequence_values)
+            for k, v in sequence_values.items():
+                if fixed_row.get(k, 0) == v:
+                    goal_count -= 1
+            if goal_count == 0:
+                print(row['name'])
+                return
+        print('No match')
 
     return
 
