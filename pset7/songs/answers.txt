@@ -1,0 +1,114 @@
+If songs.db contains the top 100 songs of one listener from 2018, how would you 
+characterize their audio aura?
+
+    - Each of the auras would have set range for the energy, valance, and danceability values.  
+      I could have a SQL query that calculated the AVG for the descriptors for their top 100 songs 
+      and then have some algorithm that picked which aura group most closely matched their three averages.
+
+    For example:
+        -> "Orange" Auras are described as "rebellious and bold" so they might
+            have a lower danceable score but higher energy and loud levels.
+              - danceability:   .45
+              - loudness:       -8
+              - energy:         .9
+
+        -> "Yellow" Auras listen to music that calms their nerves and helps
+           "fuel their goals". Their energy and loudness might be lower but 
+            dance scale higher because the rhythm could help them get into a 
+            flow state.
+             - danceability: .6
+             - loudness:     -3
+             - energy:       .5
+
+
+    Then, there would be a SQL query that captured the average values for 
+    their top 100 songs like:
+
+        SELECT AVG(energy), AVG(danceability), AVG(loudness)
+        FROM songs
+        ORDER BY plays DESC
+        LIMIT 100;
+
+
+    An algorithm could be written to capture the average absolute value 
+    differences from the aura's values and the user's values.
+
+    If the user's averages were from the songs.db, then you could find 
+    the absolute value difference from my made-up orange and yellow values:
+
+        +-------------+-------------------+---------------+
+        | AVG(energy) | AVG(danceability) | AVG(loudness) |
+        +-------------+-------------------+---------------+
+        | 0.65906     | 0.71646           | -5.67764      |
+        +-------------+-------------------+---------------+
+
+    Orange comparison:
+        Danceability:  | .45 - .71 | = .26
+        Loudness:      | -8 - (-3) | = 5
+        Energy:        | .9 - .65  | = .25
+
+    Yellow comparison:
+        Danceability:  | .60 - .71 | = .11
+        Loudness:      | -3 - (-3) | = 0
+        Energy:        | .5 - .65  | = .15
+
+
+    Based on my made up hypothetical values for the orange and yellow aura's, 
+    the user's values would align more closely to the yellow aura.
+
+    (I have no idea how this would actually be done, just speculating)
+
+
+
+
+
+2. Hypothesize about why the way you’ve calculated this aura might not be very 
+representative of the listener. What better ways of calculating this aura 
+would you propose?
+
+      Its always going to be hard to extrapolate meaning from data because there 
+      are so many unknown quantities. For example, my sister has kids and she listens 
+      to some of the same songs over and over again because her kids like those songs.  
+      Should that be apart of the the "aura" even if it doesn't reflect her musical 
+      tastes?
+
+      Another weird variable is spotify's shuffle algorithm.  It's a pretty well known 
+      fact that Spotify's random shuffle isn't entirely random.  If you are getting the 
+      same handful of songs first when you shuffle a playlist, those songs are going to 
+      be over represented in your top 100 list.
+
+      In recent years Spotify has done a better of making their "Spotify Wrapped" 
+      slightly more generic and less about the top 100 songs.  For example it gave me 
+      information about often I listened to music outside of the main genres I listen 
+      to. It was more or less an "adventure" score rather than a score of my overall 
+      musical personality. I think something like this does a better job of generalizing 
+      without overstepping.
+
+      To answer the second part of this hypothetical question I probably would analyze 
+      their top genres out of all the songs they listen to rather than the top songs. 
+      I think this could give a better indication of what the user has going on in their 
+      life and maybe not call it an "aura".
+
+      If I absolutely has to give an aura score, I would try to make the quantifiable 
+      data points better. For example while answering the first question, I looked on 
+      their website to see what the loudness measurement meant.  I think it is how much 
+      they need to normalize the song to make the album average at -14dB. Essentially 
+      louder songs needed a lower number in order to get it to the average while softer 
+      songs needed a higher value because they didn't need as much normalization.  
+      If I read that correctly and this average is calculated with the entire album, 
+      it could skew that data if there is a particularly loud song on a overall quiet 
+      album or vice versa.
+
+      Im guessing danceability is measured by the rhythm of a song but a danceable 
+      song to one person might be not be to another.  Some people square dance to 
+      country music while others enjoy twerking to hip-hop.  It seems like many cultures 
+      all over the world have different types of music they enjoy to move to all with 
+      different rhythm patterns.
+
+      To solve this problem I would try to normalize the data against how it compares to 
+      other music genres inside the same geographic location.  Music from India probably 
+      shouldn't get scored in the same way that New Orleans Jazz gets scored. People in 
+      other cultures might focus, workout, and express emotions in totally different ways.
+
+
+Source for how spotify measures loudness: https://support.spotify.com/us/artists/article/loudness-normalization/
