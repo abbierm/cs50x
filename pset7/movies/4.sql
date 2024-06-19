@@ -1,9 +1,7 @@
 /*
-Write a SQL query to list the titles and release years of all Harry Potter movies, in chronological order.
+Write a SQL query to determine the number of movies with an IMDb rating of 10.0.
 
-    -Your query should output a table with two columns, one for the title of
-        each movie and one for the release year of each movie.
-    -You may assume that the title of all Harry Potter movies will begin with
-         the words “Harry Potter”, and that if a movie title begins with the words “Harry Potter”, it is a Harry Potter movie.
+    Your query should output a table with a single column and a single row (not counting the header) containing the number of movies with a 10.0 rating.
 */
-SELECT title, year FROM movies WHERE title LIKE "Harry Potter%" ORDER BY year;
+SELECT count(movie_id) FROM ratings WHERE rating = 10.0;
+
