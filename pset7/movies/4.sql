@@ -1,8 +1,9 @@
 /*
-Write a SQL query to list the titles of all movies with a release date on or after 2018, in alphabetical order.
+Write a SQL query to list the titles and release years of all Harry Potter movies, in chronological order.
 
-    - Your query should output a table with a single column for the title of each movie.
-    - Movies released in 2018 should be included, as should movies with release dates in the future.
-
+    -Your query should output a table with two columns, one for the title of
+        each movie and one for the release year of each movie.
+    -You may assume that the title of all Harry Potter movies will begin with
+         the words “Harry Potter”, and that if a movie title begins with the words “Harry Potter”, it is a Harry Potter movie.
 */
-SELECT title FROM movies WHERE year >= 2018 ORDER BY title;
+SELECT title, year FROM movies WHERE title LIKE "Harry Potter%" ORDER BY year;
