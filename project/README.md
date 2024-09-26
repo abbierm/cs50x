@@ -84,7 +84,7 @@ The returned start payload will have a key named "game_id" that will be used ins
 
 As long as the game is valid, the user will receive the same payload format as the start response. Each guess that the Solver sends will get feedback inside of the "guesses" key. Each guess/feedback pair will be nested together inside of another dictionary with the guess_number as the key.
 
-![Wordle Example Image](app/static//wordle_example.JPG)
+![Wordle Example Image](static/wordle_example.JPG)
 
 If the above example was a WordGuessApi game with a solver named "mySolver" and a game_id of "1111111111111111", the ending payload would look like:
 
@@ -267,7 +267,7 @@ The hardest part of writing tests while building this application was updating t
 ### The Frontend Website
 WordGuessAPI has a pretty bare-bones basic frontend layout.  I opted to write my own CSS instead of using Bootstrap because I was picky about how it looked.  There is nothing wrong with Bootstrap but after spending a few afternoons trying to figure out how to customize the SASS files I realized it was easier to just learn CSS.
 
-![Landing Page](app/static/index.JPG)
+![Landing Page](static/index.JPG)
 
 Almost all of the CSS lives inside the app/static/styles.css file. There are a few exceptions where if one specific element needed to be slightly different than it's peers, then I would add a "style" attribute inline to that element's HTML.  Inside the the "styles.css" file I utilized flexbox quite a lot due it being intuitive and easier to accommodate mobile friendly browsing.
 
