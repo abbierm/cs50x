@@ -1,5 +1,5 @@
 # WordGuessAPI
-#### #TODO: Video Demo:
+#### Video Demo: https://youtu.be/nPj7t-Y--OM
 
 ### Description:
 WordGuessAPI is a Wordle clone you play via API calls. I created this as a way to test Wordle solvers without needing to manually input their answers into the terminal.  WordGuessAPI is primarily written in Python with a bit of HTML and CSS for the website.  I used Flask as the web framework, SQLAlchemy and SQLite to manage the database, and Pytest to help test my project.
