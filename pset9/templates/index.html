@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Homepage
+{% endblock %}
+
+{% block main %}
+    <section>
+        <div>Welcome back {{ info.username }}!</div>
+    </section>
+
+    <br>
+
+    <p><strong>Current Account Balance:</strong> {{ info.cash | usd }}</p>
+
+
+    <table class="table table-hover">
+        <thread>
+            <tr>
+                <th>Symbol</th>
+                <th>Name</th>
+                <th>Shares</th>
+                <th>Price</th>
+                <th>TOTAL</th>
+                <th>SELL?</th>
+            </tr>
+        </thread>
+        <tbody>
+            {% for stocks in holdings %}
+                <tr>
+                    <td>{{ stocks.symbol }}</td>
+                    <td>{{ stocks.company }}</td>
+                    <td>{{ stocks.shares }}</td>
+                    <td>{{ stocks.price | usd }}</td>
+                    <td>{{ stocks.total | usd }}</td>
+                    <td class="small-width-button">
+                        <form action="/sell" method="post">
+
+                            <input autocomplete="off" autofocus class="form-control" id="shares" name="shares" placeholder="Shares" type="number">
+                            <input name="symbol" type="hidden" value="{{ stocks.symbol }}">
+                            <button class="btn btn-primary" type="submit" >Sell</button>
+                        </form>
+                    </td>
+            {% endfor %}
+                </tr>
+        </tbody>
+    </table>
+    <p><strong>Total Stock Value: </strong>{{ total_stock_value | usd }}</p>
+    <p><strong>Total value (stocks + account balance): </strong>{{ grand_total | usd}} </p>
+{% endblock %}
+
