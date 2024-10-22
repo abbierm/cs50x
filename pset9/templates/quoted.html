@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Quoted
+{% endblock %}
+
+{% block main %}
+    <strong>Company Name:</strong> {{ quote['name'] }}
+    <br>
+    <strong>Current Stock Price:</strong> {{ quote['price'] | usd }}
+    <br>
+    <strong>Stock Symbol:</strong> {{ quote['symbol'] }}
+
+{% endblock %}
