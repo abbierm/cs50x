@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Buy
+{% endblock %}
+
+{% block main %}
+    <form action="/buy" method="post">
+        <div class="row">
+            <div class="col">
+                <div class="mb-4">
+                    <input autocomplete="on" autofocus class="form-control mx-auto w-auto" id="company" name="company" placeholder="Search Company Name" type="text">
+                </div>
+            </div>
+            <div class="col">
+                <div class="mb-4">
+                    <input autocomplete="off" autofocus class="form-control     mx-auto w-auto" id="symbol" name="symbol"   placeholder="Stock Symbol" type="text">
+                </div>
+            </div>
+            <div class="col">
+                <div class="mb-4">
+                    <input autocomplete="off" autofocus class="form-control     mx-auto w-auto" id="shares" name="shares" placeholder="Number of shares" type="number">
+                </div>
+            </div>
+            <div class="col">
+                <button class="btn btn-primary" type="submit">Buy</button>
+            </div>
+        </div>
+    </form>
+    <div class="row no-gutters">
+        <div class="col-sm-5 me-auto">
+            <ul id="list" class="list-group no-gutters"></ul>
+                <script>
+                    let input = document.querySelector('input');
+                    input.addEventListener('input', async function() {
+                        let response = await fetch('/search?q=' + input.value);
+                        let symbols = await response.json();
+                        let html = '';
+                        for (let id in symbols) {
+                            let name = symbols[id].company;
+                            let symbol = symbols[id].symbol;
+                            html += '<li class="text-start">' + name + ': ' + symbol + '</li>';
+                        }
+                        document.querySelector('#list').innerHTML = html;
+                    });
+                </script>
+        </div>
+    </div>
+{% endblock %}
