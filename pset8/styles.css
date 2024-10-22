@@ -1,0 +1,61 @@
+@font-face {
+    font-family: "myFont";
+    src: url("RobotoMono-VariableFont_wght.ttf")
+}
+
+body {
+    background-color: #ffffff;
+    color: #333333;
+    font-family: "myFont", "Regular 400";
+    font-size: 18px;
+    font-weight 300;
+}
+
+.wide-box {
+    margin-top: 1.5em;
+}
+
+a {
+    color: #777;
+}
+
+a:hover {
+    color:#333;
+    text-decoration:none;
+    border:none;
+    -webkit-transition:all .3s linear;
+    -moz-transition:all .3s linear;
+    -ms-transition:all .3s linear;
+    -o-transition:all .3s linear;
+    transition:all .3s linear;
+}
+
+.title {
+    padding: 30px;
+    text-align: center;
+}
+
+button {
+    padding: 10px 30px;
+    text-align: center;
+    font-size: 14px;
+    border-radius: 10px;
+}
+
+.flex-container > ul {
+    display: flex;
+    justify-content: center;
+    padding: 0 75px;
+    flex-wrap: nowrap;
+}
+
+.button-arrange {
+    list-style: none;
+    display: inline;
+    padding: 0 15px;
+}
+
+.image {
+    text-align: center;
+    width: 300px;
+}
