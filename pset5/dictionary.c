@@ -64,11 +64,6 @@ unsigned int hash(const char *word)
             v = v * l;
         }
     }
-    if (v > N)
-    {
-        printf("Word: %s hash is %i\n", word, v);
-    }
-
     return v;
 }
 
