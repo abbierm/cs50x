@@ -9,24 +9,30 @@ int main(void)
     {
         height = get_int("Height: ");
     }
-    while (height <= 0 || height > 8);
+    while (height < 1 || height > 8);
 
-    for (int i = 1; i <= height; i++)
+    // Outer Loop controls which row is getting printed
+    for (int i = 0; i < height; i++)
     {
-        for (int as = height - i; as > 0; as--)
+         // 1. Prints the alignment spaces
+        for (int spaces = height - i; spaces > i; spaces--)
         {
             printf(" ");
         }
-        for (int j = 0; j < i; j++)
+        // 2. Prints the hashes
+        for (int j = 0; j <= i; j++)
         {
             printf("#");
         }
+         // 3. Prints two spaces for the middle of the pyramid
         printf("  ");
 
-        for (int x = 0; x < i; x++)
+        // 4. Prints the right hashes
+        for (int q = 0; q <= i; q++)
         {
             printf("#");
         }
+        // 5. Prints a new line for the next row. 
         printf("\n");
     }
 }
