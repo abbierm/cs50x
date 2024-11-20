@@ -1,6 +1,6 @@
 #include <cs50.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdbool.h>
 
 bool check_sum(long n);
 int get_length(long n);
