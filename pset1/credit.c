@@ -49,22 +49,19 @@ int get_length(long n)
 
 bool check_sum(long n)
 {
-    int even = 0;
-    int odd = 0;
-    int check = 0;
+    int total = 0;
     while (n > 0)
     {
-        // odd numbers
+        // odd digit places
         int x = n % 10;
-        odd += x;
         n /= 10;
-
-        // even numbers
-        int y = (n % 10) * 2;
-        while (y > 0)
+        
+        // even digit places
+        int even_digits = (n % 10) * 2;
+        while (even_digits > 0)
         {
-            even += y % 10;
-            y /= 10;
+            total += y % 10;
+            even_digits /= 10;
         }
         n /= 10;
     }
