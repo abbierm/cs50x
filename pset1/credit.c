@@ -111,9 +111,9 @@ bool check_mastercard(int length, long cc)
         return false;
     }
     int front_two = cc / 100000000000000;
-    if ((front_two < 51 || front_two > 55))
+    if ((front_two >= 51 && front_two <= 55))
     {
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
