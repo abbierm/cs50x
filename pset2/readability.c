@@ -2,7 +2,6 @@
 #include <ctype.h>
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 float count_letters(string text);
