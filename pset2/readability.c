@@ -49,8 +49,7 @@ float count_words(string text)
     float words = 1;
     for (int i = 0, n = strlen(text); i < n; i++)
     {
-        char c = text[i];
-        if (c == ' ')
+        if (text[i] == ' ')
         {
             words += 1;
         }
