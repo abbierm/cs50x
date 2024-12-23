@@ -27,6 +27,7 @@ int main(int argc, string argv[])
     key = atoi(argv[1]) % 26;
 
     string text = get_string("Plain text:  ");
+    printf("ciphertext: ");
 
     for (int i = 0, n = strlen(text); i < n; i++)
     {
