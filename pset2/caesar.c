@@ -15,7 +15,6 @@ int main(int argc, string argv[])
         return 1;
     }
 
-    int key = -1;
     for (int i = 0, n = strlen(argv[1]); i < n; i++)
     {
         if (!isdigit(argv[1][i]))
