@@ -31,7 +31,7 @@ int main(int argc, string argv[])
     for (int i = 0, n = strlen(text); i < n; i++)
     {
         char c = text[i];
-        if (isalpha(text[i]))
+        if (isalpha(c))
         {
             int upper_flag = 0;
             if (isupper(c))
