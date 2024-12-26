@@ -31,13 +31,9 @@ int main(int argc, string argv[])
 
     for (int i = 0, n = strlen(text); i < n; i++)
     {
-        if (!isalpha(text[i]))
+        char c = text[i];
+        if (isalpha(text[i]))
         {
-            printf("%c", text[i]);
-        }
-        else
-        {
-            char c = text[i];
             int upper_flag = 0;
             if (isupper(c))
             {
@@ -47,13 +43,10 @@ int main(int argc, string argv[])
             c = rotate(c, key);
             if (upper_flag == 1)
             {
-                printf("%c", toupper(c));
-            }
-            else
-            {
-                printf("%c", c);
+                c = toupper(c);
             }
         }
+        printf("%c", c);
     }
     printf("\n");
     return 0;
