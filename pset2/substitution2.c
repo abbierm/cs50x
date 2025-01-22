@@ -12,7 +12,7 @@ string lower_alphabet = "abcdefghijklmnopqrstuvwxyz";
 
 string get_string(string s, int size);
 bool check_key_length(string k);
-bool check_key_letters(string k);
+bool check_key_duplicates(string k);
 void cipher_text(string k, string t);
 
 int main(int argc, string argv[])
@@ -24,7 +24,7 @@ int main(int argc, string argv[])
         return 1;
     }
     string key = argv[1];
-    if (!check_key_length(key) || !check_key_letters(key))
+    if (!check_key_length(key) || !check_key_duplicates(key))
     {
         return 2;
     }
@@ -66,14 +66,14 @@ bool check_key_length(string k)
     return true;
 }
 
-bool check_key_letters(string k)
+bool check_key_duplicates(string k)
 {
     for (int i = 0; i < 27; i++)
     {
-        char cur = k[i];
+        char cur = toupper(k[i]);
         for (int j = i + 1; j < 27; j++)
         {
-            if (cur == k[j])
+            if (cur == toupper(k[j]))
             {
                 printf("Key should not include duplicate letters\n");
                 return false;
