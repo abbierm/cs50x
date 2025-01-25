@@ -60,7 +60,7 @@ bool check_key_length(string k)
     int length = strlen(k);
     if (length != 26)
     {
-        printf("key should contain 26 character.\n");
+        printf("Key should contain 26 characters.\n");
         return false;
     }
     return true;
