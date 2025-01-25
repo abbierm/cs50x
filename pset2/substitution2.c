@@ -60,7 +60,7 @@ bool check_key_length(string k)
     int length = strlen(k);
     if (length != 26)
     {
-        printf("key should only be 26 letters long\n");
+        printf("key should contain 26 character.\n");
         return false;
     }
     return true;
@@ -75,7 +75,7 @@ bool check_key_duplicates(string k)
         {
             if (cur == toupper(k[j]))
             {
-                printf("Key should not include duplicate letters\n");
+                printf("Key should not contain duplicate letters.\n");
                 return false;
             }
         }
