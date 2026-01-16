@@ -5,7 +5,6 @@
 
 // Max number of candidates
 #define MAX 9
-#define string char*
 
 // preferences[i][j] is number of voters who prefer i over j
 int preferences[MAX][MAX];
@@ -36,9 +35,9 @@ void lock_pairs(void);
 void print_winner(void);
 
 // MY functions
-pair make_pair(int a, int b);
-void _sort_pairs(int low, int high);
-void _merge_pairs(int l, int m, int h);
+int find_pair_strength(pair p);
+void _sort_pairs(int l, int r);
+void merge_pairs(int l, int m, int r);
 bool _check_cycles(int win, int los);
 
 int main(int argc, string argv[])
@@ -146,36 +145,22 @@ void record_preferences(int ranks[])
 }
 
 // Record pairs of candidates where one is preferred over the other
-void add_pairs(void)
-{
-
-    // a. Iterate through the y-axis of the preferences array
-    for (int i = 0; i < candidate_count; i++)
-    {
-        // Compare ^ to all the next candidates by
-        // iterating through the subsequent candidates
-        // in the X - axis 
-        for (int j = i + 1; j < candidate_count; j++)
-        {
-            pair new = make_pair(i, j);
-            if (new.winner == -1)
-                continue;
-            else
-            {
-                pairs[pair_count] = new;
+void add_pairs(void) {
+    for (int i = 0; i < candidate_count; i++) {
+        for (int j = i + 1; j < candidate_count; j++) {
+            int op = j, cur = i;
+            int cur_prefs = preferences[i][j], op_prefs = preferences[j][i];
+            if (cur_prefs != op_prefs) {
+                pair new_pair;
+                if (cur_prefs > op_prefs)
+                    new_pair.winner = cur, new_pair.loser = op;
+                else
+                    new_pair.winner = op, new_pair.loser = cur;
+                pairs[pair_count] = new_pair;
                 pair_count++;
             }
         }
     }
-    return;
-}
-
-// Sort pairs in decreasing order by strength of victory
-void sort_pairs(void)
-{ 
-    int low = 0, high = pair_count;
-    _sort_pairs(low, high - 1);
-    return;
 }
 
 // Lock pairs into the candidate graph in order, without creating cycles
@@ -252,66 +237,69 @@ pair make_pair(int a, int b)
     return new_pair;
 }
 
-void _sort_pairs(int low, int high)
-{
-    int mid;
+int find_pair_strength(pair p) {
+    int s =  preferences[p.winner][p.loser] - preferences[p.loser][p.winner];
+    // printf("Strength for %i - %i: %i\n", p.winner, p.loser, s);
+    return s;
+}
 
-    if (low < high)
-    {
-        int mid = low + (high - low)/ 2;
-        _sort_pairs(low, mid);
-        _sort_pairs(mid + 1, high);
-        _merge_pairs(low, mid, high);
+void merge_sort(int l, int m, int r) {
+    // create temp arrays
+    int l_size = m - l + 1;
+    int r_size = r - m;
+
+    pair ltemp[l_size];
+    pair rtemp[r_size];
+
+    for (int i = 0; i < l_size; i++) {
+        ltemp[i] = pairs[l + i];
+    }
+    for (int j = 0; j < r_size; j++) {
+        rtemp[j] = pairs[m + j + 1];
+    }
+
+    int lc = 0, rc = 0;
+    int c = l;
+
+    while (lc < l_size && rc < r_size) {
+        pair lpair = ltemp[lc], rpair = rtemp[rc];
+        int lstrength = find_pair_strength(lpair);
+        int rstrength = find_pair_strength(rpair);
+        if (lstrength >= rstrength) {
+            pairs[c] = ltemp[lc];
+            lc++;
+        }
+        else {
+            pairs[c] = rtemp[rc];
+            rc++;
+        }
+        c++;
+    }
+
+    while (lc < l_size) {
+        pairs[c] = ltemp[lc];
+        c++;
+        lc++;
+    }
+
+    while (rc < r_size) {
+        pairs[c] = rtemp[rc];
+        rc++;
+        c++;
     }
 }
 
-void _merge_pairs(int l, int m, int h)
-{
-    // create two temp arrays
-    int leftSize = m - l + 1;
-    int rightSize = h - m;
-    pair templ[leftSize];
-    pair tempr[rightSize];
+// sorts pairs array slice from s to l
+void _sort_pairs(int l, int r) {
+    if (r > l) {
 
-    // fill up templ with current pairs in-between low and mid
-    for (int i = 0; i < leftSize; i++)
-        templ[i] = pairs[l + i];
-
-    // fill up tempr with current pairs in-between mid and high
-    for (int j = 0; j < rightSize; j++)
-        tempr[j] = pairs[m + 1 + j];
-
-    int i = 0, j = 0, k = l;
-
-   while (i < leftSize && j < rightSize) {
-        
-        int lw = templ[i].winner, ll = templ[j].loser;
-        int rw = tempr[j].winner, rl = tempr[j].loser;
-        int l_strength = preferences[lw][ll] - preferences[ll][lw];
-        int r_strength = preferences[rw][rl] - preferences[rl][rw];
-
-        if (l_strength > r_strength) {
-            pairs[k] = templ[i];
-            i++;
-        }
-        else {
-            pairs[k] = tempr[j];
-            j++;
-        }
-        k++;
-   }
-
-    while (i < leftSize)
-    {
-        pairs[k] = templ[i];
-        i++;
-        k++;
+        int m = ((r - l) / 2) + l;
+        _sort_pairs(l, m);
+        _sort_pairs(m + 1, r);
+        merge_sort(l, m, r);
     }
-    
-    while (j < rightSize)
-    {
-        pairs[k] = tempr[j];
-        j++;
-        k++;
-    }
+}
+
+void sort_pairs(void) {
+    _sort_pairs(0, pair_count - 1);
 }
