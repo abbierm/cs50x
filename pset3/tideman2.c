@@ -195,29 +195,22 @@ bool _check_cycles(int win, int los)
 // Print the winner of the election
 void print_winner(void)
 {
-    // iterate through locked
-    for (int i = 0; i < candidate_count; i++) 
+    for (int i = 0; i < candidate_count; i++)
     {
-        for (int j = 0; j < candidate_count; j++) 
+        int flag = 0;
+        for (int j = 0; j < candidate_count; j++)
         {
-            if (locked[i][j]) 
+            if (locked[j][i] == true)
             {
-                bool win = true;
-
-                // iterate through locked[x][i]
-                for (int k = 0; k < candidate_count; k++) {
-                    if (k != i && locked[k][i]) {
-                        win = false;
-                        break;
-                    }
-                }
-
-                // if any are true set win to false
-                if (win) {
-                    printf("%s\n", candidates[i]);
-                    return;
-                }
+                flag = 1;
+                break;
             }
+        }
+        
+        if (flag == 0)
+        {
+            printf("%s\n", candidates[i]);
+            return;
         }
     }
 }
